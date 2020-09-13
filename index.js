@@ -126,7 +126,7 @@ async function start() {
         }
 
         // TODO: Handle order executing outside of loop, and if nothing was found inside the loop, take first element?
-        // TODO: check order history? Is this needed if we just check if cash is high enough
+        // TODO: check order history or an order is already open for this tracker or if last order was long enough ago
         break;
       }
     }
