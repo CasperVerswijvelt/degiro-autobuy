@@ -19,23 +19,33 @@ const degiro = new DeGiro();
 const minCashInvest = 1;
 const maxCashInvest = 1000;
 const cashCurrency = "EUR";
-const ratios = [
+const wantedEtfs = [
   {
     symbol: "EMIM",
     isin: "IE00BKM4GZ66",
-    ratio: 12 / 100,
-    exchangeId: 200,
+    ratio: 12,
+    exchangeId: 200, // Euronext Amsterdam
     onlyBuyWhenFree: false,
   },
   {
     symbol: "IWDA",
     isin: "IE00B4L5Y983",
-    ratio: 88 / 100,
-    exchangeId: 200,
+    ratio: 88,
+    exchangeId: 200, // Euronext Amsterdam
+    onlyBuyWhenFree: true,
+  },
+  {
+    symbol: "VUSA",
+    isin: "IE00B3XXRP09",
+    ratio: 10,
+    exchangeId: 200, // Euronext Amsterdam
     onlyBuyWhenFree: true,
   },
 ];
-const preferredExchange = "EAM";
+
+const totalRatio = getTotalValue(wantedEtfs, "ratio");
+
+wantedEtfs.forEach((el) => (el.ratio = el.ratio / totalRatio));
 
 async function start() {
   // Login
@@ -63,85 +73,160 @@ async function start() {
     );
 
     // Get total value of all ETF's in portfolio
-    const totalETFValue = getTotalValue(etfs);
+    const totalETFValue = getTotalValue(etfs, "value");
+
+    freeEtfs = [];
+    paidEtfs = [];
+
+    // Check order history for open order
+    const openOrders = (await degiro.getOrders({ active: true })).orders;
+    if (openOrders.length) {
+      console.log(`There are currently open orders, doing nothing.`);
+      return;
+    }
 
     // Loop over wanted etfs, see if ratio is below wanted ratio
-    for (let i = 0; i < ratios.length; i++) {
-      const symbol = ratios[i].symbol;
-      const isin = ratios[i].isin;
-      const ratio = ratios[i].ratio;
-      const exchangeId = ratios[i].exchangeId;
-      const onlyBuyWhenFree = !!ratios[i].onlyBuyWhenFree;
-
-      const currentRatio = 0;
-
+    for (etf of wantedEtfs) {
+      // Find current etf in owned etfs
       const matchingOwnedEtfs = etfs.filter(
-        (etf) =>
-          etf.productData &&
-          etf.productData.isin === isin &&
-          etf.productData.symbol === symbol
+        (el) =>
+          el.productData &&
+          el.productData.isin === etf.isin &&
+          el.productData.symbol === etf.symbol
       );
-      const ownedEtfValue = getTotalValue(matchingOwnedEtfs);
+
+      // Calculate owned ratio in relation to total etf value of portfolio
+      const ownedEtfValue = getTotalValue(matchingOwnedEtfs, "value");
       const ownedEtfValueRatio = ownedEtfValue / totalETFValue;
-      if (ownedEtfValue / totalETFValue < ratio) {
+
+      if (ownedEtfValue / totalETFValue >= etf.ratio) {
         console.log(
-          `Found symbol ${symbol} (${isin}) with total value ratio ${ownedEtfValueRatio.toFixed(
+          `Symbol ${etf.symbol} (${
+            etf.isin
+          }) exceeds wanted ratio ${etf.ratio.toFixed(
             2
-          )}, lower than wanted ratio  ${ratio.toFixed(2)}.`
+          )} with ${ownedEtfValueRatio.toFixed(2)}, ignoring.`
         );
+        continue;
+      }
 
-        const matchingProducts = (
-          await degiro.searchProduct({
-            type: DeGiroProducTypes.etfs,
-            text: isin,
-          })
-        ).filter((product) => product.exchangeId === exchangeId.toString());
-        const product = matchingProducts[0];
-        if (!product) {
-          console.error(
-            `Did not find matching product for symbol ${symbol} (${isin}) on exchange ${exchangeId}`
-          );
+      console.log(
+        `Found symbol ${etf.symbol} (${
+          etf.isin
+        }) with total value ratio ${ownedEtfValueRatio.toFixed(
+          2
+        )}, lower than wanted ratio ${etf.ratio.toFixed(2)}.`
+      );
+
+      // Search product
+      const matchingProducts = (
+        await degiro.searchProduct({
+          type: DeGiroProducTypes.etfs,
+          text: etf.isin,
+        })
+      ).filter((product) => product.exchangeId === etf.exchangeId.toString());
+      const product = matchingProducts[0];
+      if (!product) {
+        console.error(
+          `Did not find matching product for symbol ${etf.symbol} (${etf.isin}) on exchange ${etf.exchangeId}`
+        );
+      }
+
+      // Create order to check transasction fees
+      const orderType = {
+        buySell: DeGiroActions.BUY,
+        productId: product.id,
+        orderType: DeGiroMarketOrderTypes.MARKET,
+        size: 1, // Doesn't matter, just checking transaction fees
+      };
+      const order = await degiro.createOrder(orderType);
+
+      if (etf.onlyBuyWhenFree && order.transactionFees) {
+        `Symbol ${symbol} (${isin}) on exchange ${exchangeId} has transaction fees but should be free, ignoring.`;
+        continue;
+      }
+
+      let result = { ...etf, ...order, ...product };
+
+      if (etf.onlyBuyWhenFree) {
+        freeEtfs.push(result);
+      } else {
+        paidEtfs.push(result);
+      }
+    }
+
+    //console.log(freeEtfs, paidEtfs);
+    console.log(
+      `Free ETF's eligible for buying: ${freeEtfs
+        .map((el) => el.symbol)
+        .join(", ")}`
+    );
+    console.log(
+      `Paid ETF's eligible for buying: ${paidEtfs
+        .map((el) => el.symbol)
+        .join(", ")}`
+    );
+
+    // Either select all eligible free etf's for buying, or the first paid one
+    if (freeEtfs.length > 0) {
+      // Place orders for all free etfs
+      const cashPerEtf = cash / freeEtfs.length;
+      for (etf of freeEtfs) {
+        // Calculate amount
+        const amount = Math.floor(cashPerEtf / etf.closePrice);
+        await delay(2000);
+        try {
+          await placeOrder({
+            buySell: DeGiroActions.BUY,
+            productId: etf.id,
+            orderType: DeGiroMarketOrderTypes.MARKET,
+            size: amount,
+          });
+        } catch (e) {
+          console.log(e);
         }
+      }
+    } else {
+      // Place order for paid etf if exists
+      const etf = paidEtfs[0];
 
-        const size = Math.round(cash / product.closePrice);
+      if (etf) {
+        // Calculate amount
+        const amount = Math.floor(cash / etf.closePrice);
 
-        // Create order
-        const orderType = {
+        await delay(2000);
+        await placeOrder({
           buySell: DeGiroActions.BUY,
-          productId: product.id,
+          productId: etf.id,
           orderType: DeGiroMarketOrderTypes.MARKET,
-          size: size,
-        };
-        const order = await degiro.createOrder(orderType);
-
-        if (!onlyBuyWhenFree || !order.transactionFees) {
-          console.log(
-            `Executing order for for symbol ${symbol} (${isin}) on exchange ${exchangeId}. Amount: ${size}.`
-          );
-          degiro.executeOrder(orderType, order.confirmationId);
-        } else {
-          console.error(
-            `Cancel order for for symbol ${symbol} (${isin}) on exchange ${exchangeId}, order should be free but was not.`
-          );
-        }
-
-        // TODO: Handle order executing outside of loop, and if nothing was found inside the loop, take first element?
-        // TODO: check order history or an order is already open for this tracker or if last order was long enough ago
-        break;
+          size: amount,
+        });
       }
     }
   }
 }
 
-function getTotalValue(products) {
-  return products.reduce(
-    (a, b) => ({
-      value: a.value + (b.value ? b.value : 0),
-    }),
-    {
-      value: 0,
-    }
-  ).value;
+async function placeOrder(orderType) {
+  const order = await degiro.createOrder(orderType);
+  const confirmation = await degiro.executeOrder(
+    orderType,
+    order.confirmationId
+  );
+  console.log(confirmation);
+}
+
+function delay(ms) {
+  return new Promise((resolve) => setTimeout(resolve, ms));
+}
+
+function getTotalValue(products, key) {
+  let start = {};
+  start[key] = 0;
+  return products.reduce((a, b) => {
+    let res = {};
+    res[key] = a[key] + (b[key] ? b[key] : 0);
+    return res;
+  }, start)[key];
 }
 
 start();
