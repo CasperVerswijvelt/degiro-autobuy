@@ -21,8 +21,7 @@ const port = process.env.PORT ? process.env.PORT : 8080;
 // Degiro init
 
 const degiro = new DeGiro();
-const minCashInvest = 1;
-const maxCashInvest = 1000;
+const minCashInvest = 500;
 const cashCurrency = "EUR";
 const wantedEtfs = [
   {
