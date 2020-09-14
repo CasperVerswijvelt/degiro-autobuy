@@ -1,6 +1,9 @@
 const DeGiroModule = require("degiro-api");
 const { DeGiroSort } = require("degiro-api/dist/enums");
 
+const express = require("express");
+const app = express();
+
 const DeGiro = DeGiroModule.default;
 const DeGiroEnums = DeGiroModule.DeGiroEnums;
 const DeGiroTypes = DeGiroModule.DeGiroTypes;
@@ -13,9 +16,11 @@ const {
   DeGiroTimeTypes,
 } = DeGiroEnums;
 
-// Degiro init
-const degiro = new DeGiro();
+const port = process.env.PORT ? process.env.PORT : 8080;
 
+// Degiro init
+
+const degiro = new DeGiro();
 const minCashInvest = 1;
 const maxCashInvest = 1000;
 const cashCurrency = "EUR";
@@ -42,12 +47,15 @@ const wantedEtfs = [
     onlyBuyWhenFree: true,
   },
 ];
+let scriptIsRunning = false;
 
 const totalRatio = getTotalValue(wantedEtfs, "ratio");
 
 wantedEtfs.forEach((el) => (el.ratio = el.ratio / totalRatio));
 
 async function start() {
+  scriptIsRunning = true;
+
   // Login
   const accountData = await degiro.login();
 
@@ -82,6 +90,7 @@ async function start() {
     const openOrders = (await degiro.getOrders({ active: true })).orders;
     if (openOrders.length) {
       console.log(`There are currently open orders, doing nothing.`);
+      scriptIsRunning = false;
       return;
     }
 
@@ -155,7 +164,6 @@ async function start() {
       }
     }
 
-    //console.log(freeEtfs, paidEtfs);
     console.log(
       `Free ETF's eligible for buying: ${freeEtfs
         .map((el) => el.symbol)
@@ -175,16 +183,15 @@ async function start() {
         // Calculate amount
         const amount = Math.floor(cashPerEtf / etf.closePrice);
         await delay(2000);
-        try {
-          await placeOrder({
-            buySell: DeGiroActions.BUY,
-            productId: etf.id,
-            orderType: DeGiroMarketOrderTypes.MARKET,
-            size: amount,
-          });
-        } catch (e) {
-          console.log(e);
-        }
+        let confirmation = await placeOrder({
+          buySell: DeGiroActions.BUY,
+          productId: etf.id,
+          orderType: DeGiroMarketOrderTypes.MARKET,
+          size: amount,
+        });
+        console.log(
+          `Succesfully placed market order for ${amount} * ${etf.symbol} (${confirmation})`
+        );
       }
     } else {
       // Place order for paid etf if exists
@@ -204,6 +211,7 @@ async function start() {
       }
     }
   }
+  scriptIsRunning = false;
 }
 
 async function placeOrder(orderType) {
@@ -212,7 +220,7 @@ async function placeOrder(orderType) {
     orderType,
     order.confirmationId
   );
-  console.log(confirmation);
+  return confirmation;
 }
 
 function delay(ms) {
@@ -229,4 +237,22 @@ function getTotalValue(products, key) {
   }, start)[key];
 }
 
-start();
+// Express routes
+app.get("/", (req, res) => {
+  let html = `<a href ="/run">Run</a>`;
+  if (scriptIsRunning) html += `<p>Script is running</p>`;
+  res.send(html);
+});
+
+app.get("/run", (req, res) => {
+  if (!scriptIsRunning) {
+    start();
+    res.send(`<a href ="/run">Run</a> <p>Script started</p>`);
+  } else {
+    res.send(`<a href ="/run">Run</a> <p>Script was already running</p>`);
+  }
+});
+
+app.listen(port, () => {
+  console.log(`Listening at http://localhost:${port}`);
+});
