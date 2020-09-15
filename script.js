@@ -14,6 +14,7 @@ const {
 // Config values
 const minCashInvest = 500;
 const cashCurrency = "EUR";
+const divideEqually = false;
 const wantedEtfs = [
   {
     symbol: "EMIM",
@@ -32,8 +33,15 @@ const wantedEtfs = [
   {
     symbol: "VUSA",
     isin: "IE00B3XXRP09",
-    ratio: 10,
+    ratio: 9,
     exchangeId: 200, // Euronext Amsterdam
+    onlyBuyWhenFree: true,
+  },
+  {
+    symbol: "EQQQ",
+    isin: "IE0032077012",
+    ratio: 9,
+    exchangeId: 710, // Euronext Paris
     onlyBuyWhenFree: true,
   },
 ];
@@ -60,15 +68,20 @@ async function runScript() {
     throw new Error("Invalid credentials");
   }
 
+  console.log();
+
   // Get cash funds
-  const cash =
-    (await degiro.getCashFunds()).filter(
-      (type) => type.currencyCode === cashCurrency
-    )[0].value + 600;
+  let cash = (await degiro.getCashFunds()).filter(
+    (type) => type.currencyCode === cashCurrency
+  )[0].value;
+
+  let cash = 2000;
 
   // If cash funds is high enough -> continue
   if (cash < minCashInvest) {
-    console.log(`Cash in account (${cash}) is less than minimum cash funds.`);
+    console.log(
+      `Cash in account (${cash}) is less than minimum cash funds (${minCashInvest}).`
+    );
     return;
   }
 
@@ -117,20 +130,21 @@ async function runScript() {
       console.log(
         `Symbol ${etf.symbol} (${
           etf.isin
-        }) exceeds wanted ratio ${etf.ratio.toFixed(
+        }): actual ratio ${ownedEtfValueRatio.toFixed(2)} > ${etf.ratio.toFixed(
           2
-        )} with ${ownedEtfValueRatio.toFixed(2)}, ignoring.`
+        )} wanted ratio, ignoring.`
       );
       continue;
     }
 
     console.log(
-      `Found symbol ${etf.symbol} (${
+      `Symbol ${etf.symbol} (${
         etf.isin
-      }) with total value ratio ${ownedEtfValueRatio.toFixed(
+      }): actual ratio ${ownedEtfValueRatio.toFixed(2)} < ${etf.ratio.toFixed(
         2
-      )}, lower than wanted ratio ${etf.ratio.toFixed(2)}.`
+      )} wanted ratio, adding to buy list.`
     );
+    etf.ratioDifference = etf.ratio - ownedEtfValue;
 
     // Search product
     const matchingProducts = (
@@ -138,12 +152,18 @@ async function runScript() {
         type: DeGiroProducTypes.etfs,
         text: etf.isin,
       })
-    ).filter((product) => product.exchangeId === etf.exchangeId.toString());
+    ).filter((product) => {
+      return (
+        etf.isin.toLowerCase() === product.isin.toLowerCase() &&
+        product.exchangeId === etf.exchangeId.toString()
+      );
+    });
     const product = matchingProducts[0];
     if (!product) {
       console.error(
         `Did not find matching product for symbol ${etf.symbol} (${etf.isin}) on exchange ${etf.exchangeId}`
       );
+      continue;
     }
 
     // Create order to check transasction fees
@@ -156,7 +176,9 @@ async function runScript() {
     const order = await degiro.createOrder(orderType);
 
     if (etf.onlyBuyWhenFree && order.transactionFees) {
-      `Symbol ${symbol} (${isin}) on exchange ${exchangeId} has transaction fees but should be free, ignoring.`;
+      console.log(
+        `Symbol ${etf.symbol} (${etf.isin}) on exchange ${product.exchangeId} has transaction fees but should be free, ignoring.`
+      );
       continue;
     }
 
@@ -169,6 +191,7 @@ async function runScript() {
     }
   }
 
+  console.log();
   console.log(
     `Free ETF's eligible for buying: ${freeEtfs
       .map((el) => el.symbol)
@@ -179,15 +202,35 @@ async function runScript() {
       .map((el) => el.symbol)
       .join(", ")}`
   );
+  console.log();
 
   // Either select all eligible free etf's for buying, or the first paid one
   if (freeEtfs.length > 0) {
     // Place orders for all free etfs
+
     const cashPerEtf = cash / freeEtfs.length;
+    const freeEtfsTotalNeededRatio = getTotalValue(freeEtfs, "ratioDifference");
+
+    console.log(
+      `Choosing to buy free ETF's, dividing available cash ${
+        divideEqually ? "equally" : "by wanted ratio"
+      }`
+    );
+
     for (etf of freeEtfs) {
       // Calculate amount
-      const amount = Math.floor(cashPerEtf / etf.closePrice);
+      const ratio = etf.ratioDifference / freeEtfsTotalNeededRatio;
+      const amount = divideEqually
+        ? Math.round(cashPerEtf / etf.closePrice)
+        : Math.round((ratio * cash) / etf.closePrice);
+
+      if (amount === 0) {
+        console.log(`Cancel order for ${amount} * ${etf.symbol}, amount is 0`);
+        continue;
+      }
+
       await delay(1000);
+
       let confirmation = await placeOrder({
         buySell: DeGiroActions.BUY,
         productId: etf.id,
