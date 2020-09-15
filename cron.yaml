@@ -1,0 +1,4 @@
+cron:
+  - description: "Repeating script run"
+    url: /run
+    schedule: every 4 hours
