@@ -71,11 +71,9 @@ async function runScript() {
   console.log();
 
   // Get cash funds
-  let cash = (await degiro.getCashFunds()).filter(
+  const cash = (await degiro.getCashFunds()).filter(
     (type) => type.currencyCode === cashCurrency
   )[0].value;
-
-  let cash = 2000;
 
   // If cash funds is high enough -> continue
   if (cash < minCashInvest) {
