@@ -1,3 +1,4 @@
+// Imports and enums and stuff
 const DeGiroModule = require("degiro-api");
 
 const DeGiro = DeGiroModule.default;
@@ -53,9 +54,10 @@ async function runScript() {
   }
 
   // Get cash funds
-  const cash = (await degiro.getCashFunds()).filter(
-    (type) => type.currencyCode === cashCurrency
-  )[0].value;
+  const cash =
+    (await degiro.getCashFunds()).filter(
+      (type) => type.currencyCode === cashCurrency
+    )[0].value + 600;
 
   // If cash funds is high enough -> continue
   if (cash < minCashInvest) {
@@ -206,17 +208,18 @@ async function runScript() {
       });
     }
   }
+
+  async function placeOrder(orderType) {
+    const order = await degiro.createOrder(orderType);
+    const confirmation = await degiro.executeOrder(
+      orderType,
+      order.confirmationId
+    );
+    return confirmation;
+  }
 }
 
-async function placeOrder(orderType) {
-  const order = await degiro.createOrder(orderType);
-  const confirmation = await degiro.executeOrder(
-    orderType,
-    order.confirmationId
-  );
-  return confirmation;
-}
-
+// Utilities
 function delay(ms) {
   return new Promise((resolve) => setTimeout(resolve, ms));
 }
@@ -231,4 +234,5 @@ function getTotalValue(products, key) {
   }, start)[key];
 }
 
+// Export
 exports.run = runScript;
