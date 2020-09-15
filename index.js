@@ -11,6 +11,6 @@ exports.runScript = (_req, res) => {
   require("./script")
     .run()
     .catch((reason) => {
-      console.err(`Script failed, reason: ${reason}`);
+      console.error(`Script failed, reason: ${reason}`);
     });
 };

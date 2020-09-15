@@ -43,6 +43,13 @@ const totalRatio = getTotalValue(wantedEtfs, "ratio");
 wantedEtfs.forEach((el) => (el.ratio = el.ratio / totalRatio));
 
 async function runScript() {
+  console.log(`Started degiro-autobuy script`);
+  console.log(
+    `Desired portfolio: ${wantedEtfs
+      .map((etf) => `${etf.symbol} (${(etf.ratio * 100).toFixed(2)}%)`)
+      .join(", ")}`
+  );
+
   // New Degiro
   const degiro = new DeGiro();
 
@@ -180,7 +187,7 @@ async function runScript() {
     for (etf of freeEtfs) {
       // Calculate amount
       const amount = Math.floor(cashPerEtf / etf.closePrice);
-      await delay(2000);
+      await delay(1000);
       let confirmation = await placeOrder({
         buySell: DeGiroActions.BUY,
         productId: etf.id,
