@@ -1,0 +1,42 @@
+{
+  "minCashInvest": 500,
+  "cashCurrency": "EUR",
+  "divideBuyEqually": false,
+  "desiredPortfolio": [
+    {
+      "symbol": "IWDA",
+      "isin": "IE00B4L5Y983",
+      "ratio": 88,
+      "exchangeId": 200,
+      "degiroCore": true
+    },
+    {
+      "symbol": "VUSA",
+      "isin": "IE00B3XXRP09",
+      "ratio": 9,
+      "exchangeId": 200,
+      "degiroCore": true
+    },
+    {
+      "symbol": "EQQQ",
+      "isin": "IE0032077012",
+      "ratio": 9,
+      "exchangeId": 710,
+      "degiroCore": true
+    },
+    {
+      "symbol": "EMIM",
+      "isin": "IE00BKM4GZ66",
+      "ratio": 12,
+      "exchangeId": 200,
+      "degiroCore": false
+    },
+    {
+      "symbol": "INRG",
+      "isin": "IE00B1XNHC34",
+      "ratio": 20,
+      "exchangeId": 608,
+      "degiroCore": false
+    }
+  ]
+}

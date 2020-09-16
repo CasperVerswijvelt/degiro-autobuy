@@ -7,7 +7,7 @@ const e = require("express");
  * @param {!express:Response} res HTTP response context.
  */
 exports.runScript = (_req, res) => {
-  res.status(200).send("Script started");
+  if (res && res.status) res.status(200).send("Script started");
   require("./script")
     .run()
     .catch((reason) => {
