@@ -61,6 +61,7 @@ async function runScript() {
     );
     return;
   }
+  console.log(`Cash in account (${cash}).`);
 
   // Get portfolio
   portfolio = await degiro.getPortfolio({
@@ -185,24 +186,46 @@ async function runScript() {
   if (coreEtfs.length > 0) {
     // Place orders for all free etfs
 
-    const cashPerEtf = cash / coreEtfs.length;
-    const coreEtfsTotalNeededRatio = getTotalValue(coreEtfs, "ratioDifference");
-
     console.log(
       `Choosing to buy free ETF's (DeGiro Core selection), dividing available cash ${
         config.divideEqually ? "equally" : "by wanted ratio"
       }`
     );
 
+    // Determine amounts
+    while (true) {
+      const cashPerEtf = cash / coreEtfs.length;
+      const coreEtfsTotalNeededRatio = getTotalValue(
+        coreEtfs,
+        "ratioDifference"
+      );
+      let ready = true;
+
+      for (etf of coreEtfs) {
+        const ratio = etf.ratioDifference / coreEtfsTotalNeededRatio;
+        const amount = Math.floor(
+          config.divideEqually
+            ? cashPerEtf / etf.closePrice
+            : (ratio * cash) / etf.closePrice
+        );
+
+        if (amount > 0) {
+          etf.amountToBuy = amount;
+        } else {
+          ready = false;
+          console.log(
+            `Cancel order for ${amount} * ${etf.symbol}, amount is 0`
+          );
+          coreEtfs.splice(coreEtfs.indexOf(etf), 1);
+          break;
+        }
+      }
+      if (ready) break;
+    }
+
     for (etf of coreEtfs) {
       // Calculate amount
-      const ratio = etf.ratioDifference / coreEtfsTotalNeededRatio;
-      const amount = config.divideEqually
-        ? Math.round(cashPerEtf / etf.closePrice)
-        : Math.round((ratio * cash) / etf.closePrice);
-
-      if (amount < 1) {
-        console.log(`Cancel order for ${amount} * ${etf.symbol}, amount is 0`);
+      if (etf.amountToBuy < 1) {
         continue;
       }
 
@@ -212,10 +235,10 @@ async function runScript() {
         buySell: DeGiroActions.BUY,
         productId: etf.id,
         orderType: DeGiroMarketOrderTypes.MARKET,
-        size: amount,
+        size: etf.amountToBuy,
       });
       console.log(
-        `Succesfully placed market order for ${amount} * ${etf.symbol} (${confirmation})`
+        `Succesfully placed market order for ${etf.amountToBuy} * ${etf.symbol} (${confirmation})`
       );
     }
   } else {
