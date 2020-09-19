@@ -1,5 +1,3 @@
-const e = require("express");
-
 /**
  * Responds to any HTTP request.
  *

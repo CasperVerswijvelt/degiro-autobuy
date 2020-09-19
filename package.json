@@ -10,7 +10,6 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
-    "degiro-api": "^0.6.3",
-    "express": "^4.17.1"
+    "degiro-api": "^0.6.3"
   }
 }
