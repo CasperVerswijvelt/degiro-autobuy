@@ -4,7 +4,7 @@
  * @param {!express:Request} req HTTP request context.
  * @param {!express:Response} res HTTP response context.
  */
-module.exports.runScript = () => {
+exports.runScript = () => {
   require("./src/autobuy")
     .run()
     .catch((reason) => {
@@ -12,7 +12,7 @@ module.exports.runScript = () => {
     });
 };
 
-module.exports.searchProduct = () => {
+exports.searchProduct = () => {
   require("./src/searchproduct")
     .run()
     .catch((reason) => {
