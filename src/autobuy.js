@@ -1,6 +1,7 @@
 // Imports and enums and stuff
 const DeGiroModule = require("degiro-api");
 const fs = require("fs");
+const util = require("./util.js");
 
 const DeGiro = DeGiroModule.default;
 const DeGiroEnums = DeGiroModule.DeGiroEnums;
@@ -28,7 +29,7 @@ async function runScript() {
   // TODO: Validate required properties
 
   // Process some things from config: Calculate ratios for desired portfolio
-  const totalRatio = getTotalValue(config.desiredPortfolio, "ratio");
+  const totalRatio = util.getTotalValue(config.desiredPortfolio, "ratio");
   config.desiredPortfolio.forEach((el) => (el.ratio = el.ratio / totalRatio));
 
   console.log(
@@ -78,17 +79,17 @@ async function runScript() {
   );
 
   // Get total value of all ETF's in portfolio
-  const totalETFValue = getTotalValue(etfs, "value");
+  const totalETFValue = util.getTotalValue(etfs, "value");
 
   coreEtfs = [];
   paidEtfs = [];
 
   // Check order history for open order
-  const openOrders = (await degiro.getOrders({ active: true })).orders;
-  if (openOrders.length) {
-    console.log(`There are currently open orders, doing nothing.`);
-    return;
-  }
+  // const openOrders = (await degiro.getOrders({ active: true })).orders;
+  // if (openOrders.length) {
+  //   console.log(`There are currently open orders, doing nothing.`);
+  //   return;
+  // }
 
   // Loop over wanted etfs, see if ratio is below wanted ratio
   for (etf of config.desiredPortfolio) {
@@ -101,7 +102,7 @@ async function runScript() {
     );
 
     // Calculate owned ratio in relation to total etf value of portfolio
-    const ownedEtfValue = getTotalValue(matchingOwnedEtfs, "value");
+    const ownedEtfValue = util.getTotalValue(matchingOwnedEtfs, "value");
     const ownedEtfValueRatio = ownedEtfValue / totalETFValue;
 
     if (ownedEtfValue / totalETFValue >= etf.ratio) {
@@ -195,7 +196,7 @@ async function runScript() {
     // Determine amounts
     while (true) {
       const cashPerEtf = cash / coreEtfs.length;
-      const coreEtfsTotalNeededRatio = getTotalValue(
+      const coreEtfsTotalNeededRatio = util.getTotalValue(
         coreEtfs,
         "ratioDifference"
       );
@@ -229,7 +230,7 @@ async function runScript() {
         continue;
       }
 
-      await delay(1000);
+      await util.delay(1000);
 
       let confirmation = await placeOrder({
         buySell: DeGiroActions.BUY,
@@ -249,7 +250,7 @@ async function runScript() {
       // Calculate amount
       const amount = Math.floor(cash / etf.closePrice);
 
-      await delay(2000);
+      await util.delay(2000);
       await placeOrder({
         buySell: DeGiroActions.BUY,
         productId: etf.id,
@@ -267,21 +268,6 @@ async function runScript() {
     );
     return confirmation;
   }
-}
-
-// Utilities
-function delay(ms) {
-  return new Promise((resolve) => setTimeout(resolve, ms));
-}
-
-function getTotalValue(products, key) {
-  let start = {};
-  start[key] = 0;
-  return products.reduce((a, b) => {
-    let res = {};
-    res[key] = a[key] + (b[key] ? b[key] : 0);
-    return res;
-  }, start)[key];
 }
 
 // Export

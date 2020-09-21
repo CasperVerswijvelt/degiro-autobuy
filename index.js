@@ -4,11 +4,18 @@
  * @param {!express:Request} req HTTP request context.
  * @param {!express:Response} res HTTP response context.
  */
-exports.runScript = (_req, res) => {
-  if (res && res.status) res.status(200).send("Script started");
-  require("./script")
+module.exports.runScript = () => {
+  require("./src/autobuy")
     .run()
     .catch((reason) => {
-      console.error(`Script failed, reason: ${reason}`);
+      console.error(`Autobuy script failed, reason: ${reason}`);
+    });
+};
+
+module.exports.searchProduct = () => {
+  require("./src/searchproduct")
+    .run()
+    .catch((reason) => {
+      console.error(`Product search script failed, reason: ${reason}`);
     });
 };
