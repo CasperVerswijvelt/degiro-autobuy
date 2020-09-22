@@ -7,7 +7,3 @@
 exports.runScript = () => {
   require("./start-single");
 };
-
-exports.searchProduct = () => {
-  require("./start-search");
-};
