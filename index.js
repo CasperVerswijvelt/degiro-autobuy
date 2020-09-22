@@ -5,17 +5,9 @@
  * @param {!express:Response} res HTTP response context.
  */
 exports.runScript = () => {
-  require("./src/autobuy")
-    .run()
-    .catch((reason) => {
-      console.error(`Autobuy script failed, reason: ${reason}`);
-    });
+  require("./start-single");
 };
 
 exports.searchProduct = () => {
-  require("./src/searchproduct")
-    .run()
-    .catch((reason) => {
-      console.error(`Product search script failed, reason: ${reason}`);
-    });
+  require("./start-search");
 };

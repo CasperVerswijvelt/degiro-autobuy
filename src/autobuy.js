@@ -14,7 +14,13 @@ const {
 } = DeGiroEnums;
 
 async function runScript() {
-  console.log(`Started degiro-autobuy script`);
+  console.log(
+    `Started degiro-autobuy script at ${new Intl.DateTimeFormat("be-nl", {
+      hour: "numeric",
+      minute: "numeric",
+      second: "numeric",
+    }).format(new Date())}`
+  );
 
   let config;
 
