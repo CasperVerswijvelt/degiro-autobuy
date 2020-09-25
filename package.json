@@ -7,7 +7,8 @@
     "start": "npm run single",
     "single": "node start-single",
     "loop": "node start-loop",
-    "search": "node start-search"
+    "search": "node start-search",
+    "deploy": "gcloud functions deploy autobuy-script --entry-point runScript --region europe-west1 --trigger-topic degiro-autobuy-topic"
   },
   "author": "",
   "license": "ISC",
