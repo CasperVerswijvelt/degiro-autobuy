@@ -68,7 +68,11 @@ async function runScript() {
     );
     return;
   }
-  console.log(`Cash in account (${cash}).`);
+  const investableCash = Math.min(config.maxCashInvest, cash);
+
+  console.log(
+    `Cash in account: ${config.cashCurrency} ${cash}, limiting investment to ${config.cashCurrency} ${investableCash}`
+  );
 
   // Get portfolio
   portfolio = await degiro.getPortfolio({
@@ -201,7 +205,7 @@ async function runScript() {
 
     // Determine amounts
     while (true) {
-      const cashPerEtf = cash / coreEtfs.length;
+      const cashPerEtf = investableCash / coreEtfs.length;
       const coreEtfsTotalNeededRatio = util.getTotalValue(
         coreEtfs,
         "ratioDifference"
@@ -213,7 +217,7 @@ async function runScript() {
         const amount = Math.floor(
           config.divideEqually
             ? cashPerEtf / etf.closePrice
-            : (ratio * cash) / etf.closePrice
+            : (ratio * investableCash) / etf.closePrice
         );
 
         if (amount > 0) {
@@ -254,7 +258,7 @@ async function runScript() {
 
     if (etf) {
       // Calculate amount
-      const amount = Math.floor(cash / etf.closePrice);
+      const amount = Math.floor(investableCash / etf.closePrice);
 
       await util.delay(2000);
       await placeOrder({
