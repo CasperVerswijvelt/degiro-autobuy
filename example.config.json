@@ -2,6 +2,7 @@
   "minCashInvest": 500,
   "maxCashInvest": 1000,
   "cashCurrency": "EUR",
+  "allowOpenOrders": true,
   "divideBuyEqually": false,
   "desiredPortfolio": [
     {

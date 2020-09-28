@@ -94,11 +94,13 @@ async function runScript() {
   coreEtfs = [];
   paidEtfs = [];
 
-  // Check order history for open order
-  const openOrders = (await degiro.getOrders({ active: true })).orders;
-  if (openOrders.length) {
-    console.log(`There are currently open orders, doing nothing.`);
-    return;
+  // Check order history for open order if open orders are not allowed
+  if (!config.allowOpenOrders) {
+    const openOrders = (await degiro.getOrders({ active: true })).orders;
+    if (openOrders.length) {
+      console.log(`There are currently open orders, doing nothing.`);
+      return;
+    }
   }
 
   // Loop over wanted etfs, see if ratio is below wanted ratio
