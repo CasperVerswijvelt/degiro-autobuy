@@ -75,7 +75,7 @@ async function runScript() {
   );
 
   // Get portfolio
-  portfolio = await degiro.getPortfolio({
+  const portfolio = await degiro.getPortfolio({
     type: PORTFOLIO_POSITIONS_TYPE_ENUM.ALL,
     getProductDetails: true,
   });
