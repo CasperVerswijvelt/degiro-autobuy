@@ -62,13 +62,15 @@ async function runScript() {
   )[0].value;
 
   // If cash funds is high enough -> continue
-  if (cash < config.minCashInvest) {
+  if (cash < config.minCashInvest && !config.useMargin) {
     console.log(
       `Cash in account (${cash}) is less than minimum cash funds (${config.minCashInvest}).`
     );
     return;
   }
-  const investableCash = Math.min(config.maxCashInvest, cash);
+  const investableCash = config.useMargin
+    ? config.minCashInvest
+    : Math.min(config.maxCashInvest, cash);
 
   console.log(
     `Cash in account: ${config.cashCurrency} ${cash}, limiting investment to ${config.cashCurrency} ${investableCash}`
