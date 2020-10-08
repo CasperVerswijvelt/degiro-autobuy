@@ -13,5 +13,8 @@
 .git
 .gitignore
 
+example.config.json
+README.md
+
 node_modules
-#!include:.gitignore
+!include:.gitignore
