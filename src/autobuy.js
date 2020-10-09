@@ -68,9 +68,12 @@ async function runScript() {
     );
     return;
   }
+
+  const maxInvestableCash = Math.min(config.maxCashInvest, cash);
+
   const investableCash = config.useMargin
-    ? config.minCashInvest
-    : Math.min(config.maxCashInvest, cash);
+    ? Math.max(config.minCashInvest, maxInvestableCash)
+    : maxInvestableCash;
 
   console.log(
     `Cash in account: ${config.cashCurrency} ${cash}, limiting investment to ${config.cashCurrency} ${investableCash}`
