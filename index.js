@@ -4,6 +4,10 @@
  * @param {!express:Request} req HTTP request context.
  * @param {!express:Response} res HTTP response context.
  */
-exports.runScript = () => {
-  require("./start-single");
+exports.runScript = async () => {
+  await require("./src/autobuy")
+    .run()
+    .catch((reason) => {
+      console.error(`Autobuy script failed, reason: ${reason}`);
+    });
 };

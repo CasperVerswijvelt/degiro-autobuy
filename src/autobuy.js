@@ -48,10 +48,12 @@ async function runScript() {
   const degiro = new DeGiro();
 
   // Login
+  console.log("Logging in ...");
   await degiro.login();
 
   if (!degiro.isLogin()) {
-    throw new Error("Invalid credentials");
+    console.error("Invalid credentials");
+    return;
   }
 
   console.log();
