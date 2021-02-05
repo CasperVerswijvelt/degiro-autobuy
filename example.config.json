@@ -21,16 +21,9 @@
       "degiroCore": false
     },
     {
-      "symbol": "EQQQ",
-      "isin": "IE0032077012",
-      "ratio": 5,
-      "exchangeId": 710,
-      "degiroCore": true
-    },
-    {
       "symbol": "INRG",
       "isin": "IE00B1XNHC34",
-      "ratio": 10,
+      "ratio": 43,
       "exchangeId": 608,
       "degiroCore": false
     }
