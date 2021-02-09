@@ -11,6 +11,7 @@ const {
   PORTFOLIO_POSITIONS_TYPE_ENUM,
   DeGiroActions,
   DeGiroMarketOrderTypes,
+  DeGiroTimeTypes
 } = DeGiroEnums;
 
 async function runScript() {
@@ -256,6 +257,7 @@ async function runScript() {
         productId: etf.id,
         orderType: DeGiroMarketOrderTypes.MARKET,
         size: etf.amountToBuy,
+        timeType: DeGiroTimeTypes.PERMANENT
       });
       console.log(
         `Succesfully placed market order for ${etf.amountToBuy} * ${etf.symbol} (${confirmation})`
