@@ -264,20 +264,30 @@ async function runScript() {
       );
     }
   } else {
+
     // Place order for paid etf if exists
     const etf = paidEtfs[0];
 
     if (etf) {
+
+      console.log(`Choosing to buy a single paid ETF: ${etf.symbol}`);
+
       // Calculate amount
       const amount = Math.floor(investableCash / etf.closePrice);
 
       await util.delay(2000);
-      await placeOrder({
+      let confirmation = await placeOrder({
         buySell: DeGiroActions.BUY,
         productId: etf.id,
         orderType: DeGiroMarketOrderTypes.MARKET,
         size: amount,
       });
+      console.log(
+        `Succesfully placed market order for ${amount} * ${etf.symbol} (${confirmation})`
+      );
+    } else {
+
+      console.log(`No Paid ETF to buy either`);
     }
   }
 

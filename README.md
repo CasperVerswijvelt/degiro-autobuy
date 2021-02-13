@@ -23,6 +23,7 @@ This script uses nodejs and can be run as a Google Cloud Function. For our limit
 | `cashCurrency` | String | Currency of cash in your DeGiro account |
 | `allowOpenOrders` | Boolean | If set to true, script will not place any orders if there are open orders in your account |
 | `useMargin` | Boolean | If set to true, the script will place orders even if cash in account is less than minCashInvest. Your DeGiro account must have margin trading enabled for this to correctly work |
+| `divideEqually` | Boolean | If set to true, the script will divide the total order amount evenly between multiple free ETF's. If set to false, the script will use the ratio's to divide the total order amount smartly |
 | `desiredPortfolio` | Array | Your desired portfolio |
 
 #### Desired portfolio element
@@ -45,6 +46,7 @@ This script uses nodejs and can be run as a Google Cloud Function. For our limit
   "maxCashInvest": 600,       // Script will place orders with a total of maximum 600 EUR
   "allowOpenOrders": true,    // Script will place orders even if account has open orders
   "useMargin": true,          // Script will place orders even if cash in account is less than 500 EUR (minCashInvest)
+  "divideEqually" : false,    // Script will divide order amounts itself by using ratio's
   "desiredPortfolio": [
     {
       "symbol": "IWDA",       // Symbol of ETF

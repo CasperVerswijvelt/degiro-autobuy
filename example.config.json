@@ -4,6 +4,7 @@
   "cashCurrency": "EUR",
   "allowOpenOrders": true,
   "useMargin": true,
+  "divideEqually" : false,
   "desiredPortfolio": [
     {
       "symbol": "IWDA",
