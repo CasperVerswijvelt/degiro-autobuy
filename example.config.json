@@ -19,13 +19,6 @@
       "ratio": 12,
       "exchangeId": 200,
       "degiroCore": true
-    },
-    {
-      "symbol": "INRG",
-      "isin": "IE00B1XNHC34",
-      "ratio": 43,
-      "exchangeId": 608,
-      "degiroCore": false
     }
   ]
 }
