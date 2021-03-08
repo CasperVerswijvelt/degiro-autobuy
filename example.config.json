@@ -20,5 +20,6 @@
       "exchangeId": 200,
       "degiroCore": true
     }
-  ]
+  ],
+  "demo": false
 }

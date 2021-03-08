@@ -292,6 +292,9 @@ async function runScript() {
   }
 
   async function placeOrder(orderType) {
+
+    if (config.demo === true) return 'demo'
+
     const order = await degiro.createOrder(orderType);
     const confirmation = await degiro.executeOrder(
       orderType,
