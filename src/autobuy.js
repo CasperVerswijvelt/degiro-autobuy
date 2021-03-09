@@ -123,9 +123,9 @@ async function runScript() {
 
     // Calculate owned ratio in relation to total etf value of portfolio
     const ownedEtfValue = util.getTotalValue(matchingOwnedEtfs, "value");
-    const ownedEtfValueRatio = ownedEtfValue / totalETFValue;
+    const ownedEtfValueRatio = ownedEtfValue / (totalETFValue + investableCash);
 
-    if (ownedEtfValue / totalETFValue >= etf.ratio) {
+    if (ownedEtfValueRatio >= etf.ratio) {
       console.log(
         `Symbol ${etf.symbol} (${
           etf.isin
@@ -176,7 +176,7 @@ async function runScript() {
 
     if (etf.degiroCore && order.transactionFees) {
       console.log(
-        `Symbol ${etf.symbol} (${etf.isin}) on exchange ${product.exchangeId} has transaction fees but should be free, ignoring.`
+        `Symbol ${etf.symbol} (${etf.isin}) on exchange ${product.exchangeId} is in DeGiro core selection but has transaction fees, ignoring.`
       );
       continue;
     }
