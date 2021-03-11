@@ -25,6 +25,7 @@ This script uses nodejs and can be run as a Google Cloud Function. For our limit
 | `useMargin` | Boolean | If set to true, the script will place orders even if cash in account is less than minCashInvest. Your DeGiro account must have margin trading enabled for this to correctly work |
 | `divideEqually` | Boolean | If set to true, the script will divide the total order amount evenly between multiple free ETF's. If set to false, the script will use the ratio's to divide the total order amount smartly |
 | `desiredPortfolio` | Array | Your desired portfolio |
+| `demo` | Boolean | If set to true, the script will not actually place orders. Set to true if you want to test out the script or your settings first |
 
 #### Desired portfolio element
 
@@ -69,7 +70,8 @@ This script uses nodejs and can be run as a Google Cloud Function. For our limit
       "exchangeId": 608,
       "degiroCore": false
     }
-  ]
+  ],
+  "demo": false               // Actually place orders to DeGiro
 }
 ```
 
