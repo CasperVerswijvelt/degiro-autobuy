@@ -18,3 +18,10 @@ README.md
 
 node_modules
 !include:.gitignore
+
+src/breakeven.js
+src/searchproduct.js
+start-breakeven.js
+start-loop.js
+start-search.js
+start-single.js
