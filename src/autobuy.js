@@ -260,7 +260,7 @@ async function runScript() {
         timeType: DeGiroTimeTypes.PERMANENT
       });
       console.log(
-        `Succesfully placed market order for ${etf.amountToBuy} * ${etf.symbol} (${confirmation})`
+        `Succesfully placed market order for ${etf.amountToBuy} * ${etf.symbol} for ${(etf.closePrice * etf.amountToBuy).toFixed(2)} ${etf.currency} (${confirmation})`
       );
     }
   } else {

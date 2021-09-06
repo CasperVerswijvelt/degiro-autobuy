@@ -1,6 +1,6 @@
 {
-  "minCashInvest": 500,
-  "maxCashInvest": 600,
+  "minCashInvest": 1000,
+  "maxCashInvest": 1000,
   "cashCurrency": "EUR",
   "allowOpenOrders": true,
   "useMargin": true,
