@@ -1,6 +1,7 @@
 // Imports and enums and stuff
 const DeGiroModule = require("degiro-api");
 const inquirer = require("inquirer");
+const authenticator = require("otplib").authenticator;
 
 const DeGiro = DeGiroModule.default;
 const DeGiroEnums = DeGiroModule.DeGiroEnums;
@@ -9,7 +10,10 @@ const { DeGiroProducTypes } = DeGiroEnums;
 
 async function runScript() {
   // New Degiro
-  const degiro = new DeGiro();
+  const secret = process.env['DEGIRO_OTP_SECRET']
+  const degiro = new DeGiro({
+    oneTimePassword: secret ? authenticator.generate(secret) : undefined
+  });
 
   // Login
   await degiro.login();

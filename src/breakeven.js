@@ -3,12 +3,16 @@ const DeGiroModule = require("degiro-api");
 
 const DeGiro = DeGiroModule.default;
 const DeGiroEnums = DeGiroModule.DeGiroEnums;
+const authenticator = require("otplib").authenticator;
 
 const { PORTFOLIO_POSITIONS_TYPE_ENUM } = DeGiroEnums;
 
 async function runScript() {
   // New Degiro
-  const degiro = new DeGiro();
+  const secret = process.env['DEGIRO_OTP_SECRET']
+  const degiro = new DeGiro({
+    oneTimePassword: secret ? authenticator.generate(secret) : undefined
+  });
 
   // Login
   await degiro.login();

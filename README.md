@@ -92,6 +92,7 @@ This script uses nodejs and can be run as a Google Cloud Function. For our limit
 - In the environment variables tab, add 2 variables:
   - DEGIRO_USER: Value for this should be your DeGiro username
   - DEGIRO_PWD: Value for this should be your DeGiro password
+  - DEGIRO_OTP_SECRET: Value for this should be your Degiro TOTP secret
 - Press `Next`
 - Select `Node.js 12` for runtime,
 - Input `runScript` in the `Entrypoint field`
