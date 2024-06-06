@@ -9,7 +9,7 @@
     "loop": "node start-loop",
     "search": "node start-search",
     "breakeven": "node start-breakeven",
-    "deploy": "gcloud functions deploy autobuy-script --entry-point runScript --region europe-west1 --trigger-topic degiro-autobuy-topic --runtime nodejs20"
+    "deploy": "gcloud functions deploy autobuy-script --entry-point runScript --region europe-west1 --project degiro-autobuy-289617 --trigger-topic degiro-autobuy-topic --runtime nodejs20"
   },
   "author": "",
   "license": "ISC",
