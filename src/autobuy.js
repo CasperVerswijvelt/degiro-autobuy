@@ -3,6 +3,7 @@ const DeGiroModule = require("degiro-api");
 const fs = require("fs");
 const authenticator = require("otplib").authenticator;
 const util = require("./util.js");
+const UserAgent = require("user-agents");
 
 const DeGiro = DeGiroModule.default;
 const DeGiroEnums = DeGiroModule.DeGiroEnums;
@@ -49,8 +50,11 @@ async function runScript() {
   // New Degiro
   const secret = process.env['DEGIRO_OTP_SECRET']
   const degiro = new DeGiro({
-    oneTimePassword: secret ? authenticator.generate(secret) : undefined
+    oneTimePassword: secret ? authenticator.generate(secret) : undefined,
+    userAgent: new UserAgent().toString()
   });
+
+  console.log(`User agent: ${degiro.userAgent}`)
 
   // Login
   console.log("Logging in ...");

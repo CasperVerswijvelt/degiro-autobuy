@@ -16,9 +16,10 @@
   "dependencies": {
     "cron": "^1.8.2",
     "cron-parser": "^2.18.0",
-    "degiro-api": "git://github.com/CasperVerswijvelt/degiro-api.git",
+    "degiro-api": "git://github.com/CasperVerswijvelt/degiro-api.git#60aaf6678a9aaca1a20d990555943b3d31d0721f",
     "import-fresh": "^3.3.0",
     "inquirer": "^7.3.3",
-    "otplib": "^12.0.1"
+    "otplib": "^12.0.1",
+    "user-agents": "^1.1.325"
   }
 }
