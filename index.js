@@ -7,7 +7,8 @@
 exports.runScript = async () => {
   await require("./src/autobuy")
     .run()
-    .catch((reason) => {
-      console.error(`Autobuy script failed, reason: ${JSON.stringify(reason)}`);
+    .catch((error) => {
+      console.error(`Autobuy script failed`, error);
+      throw error;
     });
 };
